@@ -153,5 +153,15 @@
             createColumn(i);
         }
     </script>
+    <button id="reset-button" style="margin-top: 20px; float: left;">リセット</button>
+    <script>
+        document.getElementById("reset-button").addEventListener("click", () => {
+            values = [0, 0, 0, 0];
+            updateDisplay();
+            document.querySelectorAll(".upper .bead").forEach(bead => bead.style.transform = "translateY(0px)");
+            document.querySelectorAll(".lower .bead").forEach(bead => bead.style.transform = "translateY(0px)");
+            document.querySelectorAll(".bead").forEach(bead => bead.style.backgroundColor = "darkgray");
+        });
+    </script>
 </body>
 </html>
