@@ -163,5 +163,35 @@
             document.querySelectorAll(".bead").forEach(bead => bead.style.backgroundColor = "darkgray");
         });
     </script>
+    <div>
+        <input type="number" id="input-value" placeholder="数値を入力" min="0" max="9999" style="font-size: 1.2em; margin-top: 20px;">
+        <button id="set-value-button" style="padding: 10px; font-size: 1.2em;">設定</button>
+    </div>
+    <script>
+        document.getElementById("set-value-button").addEventListener("click", () => {
+            let inputValue = parseInt(document.getElementById("input-value").value, 10);
+            if (isNaN(inputValue) || inputValue < 0 || inputValue > 9999) return;
+            
+            let newValues = inputValue.toString().padStart(4, '0').split('').map(Number);
+            
+            newValues.forEach((num, index) => {
+                values[index] = num;
+                let column = document.querySelectorAll(".column")[index];
+                let upperBead = column.querySelector(".upper .bead");
+                let lowerBeads = column.querySelectorAll(".lower .bead");
+                
+                // 上珠の設定
+                upperBead.style.transform = num >= 5 ? "translateY(20px)" : "translateY(0px)";
+                
+                // 下珠の設定
+                lowerBeads.forEach((bead, i) => {
+                    bead.style.transform = i < num % 5 ? "translateY(-20px)" : "translateY(0px)";
+                });
+                
+                updateBeadColors(index);
+            });
+            updateDisplay();
+        });
+    </script>
 </body>
 </html>
