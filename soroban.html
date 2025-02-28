@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一桁のそろばん</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        #display {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .soroban {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 50px;
+            position: relative;
+        }
+        .upper, .lower {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .bead {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1000;
+            background-color: gray; /* 初期状態はオフ（灰色） */
+        }
+        .rod {
+            width: 10px;
+            height: 97%;
+            background-color: brown;
+            position: absolute;
+            top: 5px;
+        }
+        .divider {
+            width: 50px;
+            height: 5px;
+            background-color: black;
+            margin: 5px 0;
+            z-index: 900;
+        }
+    </style>
+</head>
+<body>
+    <div id="display">0</div>
+    <div class="soroban">
+        <div class="column">
+            <div class="rod"></div>
+            <div class="upper">
+                <div class="bead" id="upper-bead"></div>
+            </div>
+            <div class="divider"></div>
+            <div class="lower">
+                <div class="bead" id="lower-bead-1"></div>
+                <div class="bead" id="lower-bead-2"></div>
+                <div class="bead" id="lower-bead-3"></div>
+                <div class="bead" id="lower-bead-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let value = 0; // 現在の値
+        const display = document.getElementById("display");
+        const upperBead = document.getElementById("upper-bead");
+        const lowerBeads = [
+            document.getElementById("lower-bead-1"),
+            document.getElementById("lower-bead-2"),
+            document.getElementById("lower-bead-3"),
+            document.getElementById("lower-bead-4")
+        ];
+        
+        // 各値に対応する色マッピング
+        const colorMap = {
+            1: "black",
+            2: "red",
+            3: "yellow",
+            4: "green",
+            5: "orange",
+            6: "white",
+            7: "navy",
+            8: "darkred",
+            9: "brown"
+        };
+        
+        // 上珠のクリックイベント
+        upperBead.addEventListener("click", () => {
+            value = value >= 5 ? value - 5 : value + 5;
+            upperBead.style.transform = value >= 5 ? "translateY(20px)" : "translateY(0px)";
+            updateBeadColors();
+            updateDisplay();
+        });
+        
+        // 下珠のクリックイベント
+        lowerBeads.forEach((bead, i) => {
+            bead.addEventListener("click", () => {
+                let newValue = i + 1;
+                if (value % 5 >= newValue) {
+                    // 押下された数値以上の全ての珠をオフにする
+                    value -= (value % 5) - (newValue - 1);
+                } else {
+                    // それ以外ならその珠以下のすべてをオンにする
+                    value = Math.floor(value / 5) * 5 + newValue;
+                }
+                updateBeadPositions();
+                updateBeadColors();
+                updateDisplay();
+            });
+        });
+        
+        // ビーズの位置を更新
+        function updateBeadPositions() {
+            lowerBeads.forEach((b, j) => {
+                b.style.transform = j < value % 5 ? "translateY(-20px)" : "translateY(0px)";
+            });
+        }
+        
+        // ビーズの色を更新（アクティブなら指定の色、非アクティブなら灰色）
+        function updateBeadColors() {
+            upperBead.style.backgroundColor = value >= 5 ? colorMap[value] || "gray" : "gray";
+            lowerBeads.forEach((bead, i) => {
+                bead.style.backgroundColor = i < value % 5 ? colorMap[value] || "gray" : "gray";
+            });
+        }
+        
+        // 画面上の数値を更新
+        function updateDisplay() {
+            display.textContent = value;
+        }
+    </script>
+</body>
+</html>
