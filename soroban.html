@@ -55,11 +55,20 @@
             margin: 20px 0;
             z-index: 900;
         }
+        .flush {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
     </style>
 </head>
 <body>
+    <h2>フラッシュ暗算 イメージ</h2>
     <div id="display">0</div>
     <div class="soroban" id="soroban"></div>
+    <button id="reset-button" style="margin-top: 10px; float: left;">リセット</button>
+
 
     <script>
         const soroban = document.getElementById("soroban");
@@ -153,7 +162,6 @@
             createColumn(i);
         }
     </script>
-    <button id="reset-button" style="margin-top: 20px; float: left;">リセット</button>
     <script>
         document.getElementById("reset-button").addEventListener("click", () => {
             values = [0, 0, 0, 0];
@@ -163,10 +171,6 @@
             document.querySelectorAll(".bead").forEach(bead => bead.style.backgroundColor = "darkgray");
         });
     </script>
-    <div>
-        <input type="number" id="input-value" placeholder="数値を入力" min="0" max="9999" style="font-size: 1.2em; margin-top: 20px;">
-        <button id="set-value-button" style="padding: 10px; font-size: 1.2em;">設定</button>
-    </div>
     <script>
         document.getElementById("set-value-button").addEventListener("click", () => {
             let inputValue = parseInt(document.getElementById("input-value").value, 10);
@@ -192,6 +196,102 @@
             });
             updateDisplay();
         });
+    </script>
+    <div style="margin-top: 20px;" class="flush">
+        <h3>フラッシュ暗算 設定</h3>
+        <label>桁数:
+            <input type="number" id="digit-count" min="1" max="10" value="2" style="width: 50px;">
+        </label>
+        <label>表示秒数:
+            <input type="number" id="display-time" min="0.1" step="0.1" value="2" style="width: 50px;"> 秒
+        </label>
+        <label>口数:
+            <input type="number" id="num-steps" min="2" max="100" value="3" style="width: 50px;">
+        </label>
+        <label>そろばん表示遅延秒数:
+            <input type="number" id="delay-time" min="0.1" min="1" step="0.1" value="0.5" style="width: 50px;"> 秒
+        </label>
+    </div>
+    <button id="start-flash" style="padding: 10px; font-size: 1.2em; margin: 10px;">開始</button>
+
+    <script>
+        document.getElementById("start-flash").addEventListener("click", () => {
+            values = [0, 0, 0, 0];
+            updateDisplay();
+            document.querySelectorAll(".upper .bead").forEach(bead => bead.style.transform = "translateY(0px)");
+            document.querySelectorAll(".lower .bead").forEach(bead => bead.style.transform = "translateY(0px)");
+            document.querySelectorAll(".bead").forEach(bead => bead.style.backgroundColor = "darkgray");
+
+            const digitCount = parseInt(document.getElementById("digit-count").value, 10);
+            const displayTime = parseFloat(document.getElementById("display-time").value);
+            const numSteps = parseInt(document.getElementById("num-steps").value, 10);
+            const delayTime = parseFloat(document.getElementById("delay-time").value);
+
+            
+            if (isNaN(digitCount) || isNaN(displayTime) || isNaN(numSteps) || isNaN(delayTime) ) return;
+            
+            let countdown = 3;
+            display.textContent = countdown;
+            
+            let countdownInterval = setInterval(() => {
+                countdown--;
+                display.textContent = countdown;
+                if (countdown === 0) {
+                    clearInterval(countdownInterval);
+                    startFlashAnzan(digitCount, displayTime, numSteps, delayTime);
+                }
+            }, 1000);
+        });
+
+        function startFlashAnzan(digitCount, displayTime, numSteps, delayTime) {
+
+            // 初期値
+            let step = 0;
+            let randomNumberSum = 0;
+            
+            function showNextNumber() {
+                if (step >= numSteps) {
+                    display.textContent = "終了";
+                    return;
+                }
+                
+                let randomNumber = generateRandomNumber(digitCount);
+                display.textContent = randomNumber;
+                randomNumberSum += randomNumber;
+                setTimeout(function() {
+                    updateSoroban(randomNumberSum);
+                }, delayTime * 500);
+                
+                
+                step++;
+                setTimeout(showNextNumber, displayTime * 1000);
+            }
+            
+            showNextNumber();
+        }
+        
+        function generateRandomNumber(digitCount) {
+            let min = Math.pow(10, digitCount - 1);
+            let max = Math.pow(10, digitCount) - 1;
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        function updateSoroban(number) {
+            let newValues = number.toString().padStart(4, '0').split('').map(Number);
+            newValues.forEach((num, index) => {
+                values[index] = num;
+                let column = document.querySelectorAll(".column")[index];
+                let upperBead = column.querySelector(".upper .bead");
+                let lowerBeads = column.querySelectorAll(".lower .bead");
+                
+                upperBead.style.transform = num >= 5 ? "translateY(20px)" : "translateY(0px)";
+                lowerBeads.forEach((bead, i) => {
+                    bead.style.transform = i < num % 5 ? "translateY(-20px)" : "translateY(0px)";
+                });
+                
+                updateBeadColors(index);
+            });
+        }
     </script>
 </body>
 </html>
