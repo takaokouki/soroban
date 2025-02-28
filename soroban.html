@@ -58,7 +58,7 @@
     </style>
 </head>
 <body>
-    <div id="display">0000</div>
+    <div id="display">0</div>
     <div class="soroban" id="soroban"></div>
 
     <script>
@@ -146,7 +146,7 @@
         }
 
         function updateDisplay() {
-            display.textContent = values.map(v => v.toString()).join("");
+            display.textContent = parseInt(values.join(""), 10).toString();
         }
 
         for (let i = 0; i < 4; i++) {
