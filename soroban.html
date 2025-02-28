@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一桁のそろばん</title>
+    <title>四桁のそろばん</title>
     <style>
         body {
             text-align: center;
@@ -25,6 +25,7 @@
             align-items: center;
             width: 50px;
             position: relative;
+            margin: 0 10px;
         }
         .upper, .lower {
             display: flex;
@@ -37,9 +38,8 @@
             border-radius: 50%;
             cursor: pointer;
             z-index: 1000;
-            background-color: darkgray; /* 初期状態はオフ（灰色） */
-            border: 2px solid transparent; /* デフォルトの縁取りなし */
-            border: 1px solid black; /* 白色時に縁取りを追加 */
+            background-color: darkgray;
+            border: 2px solid black;
         }
         .rod {
             width: 10px;
@@ -49,7 +49,7 @@
             top: 5px;
         }
         .divider {
-            width: 50px;
+            width: 70px;
             height: 10px;
             background-color: black;
             margin: 20px 0;
@@ -58,34 +58,14 @@
     </style>
 </head>
 <body>
-    <div id="display">0</div>
-    <div class="soroban">
-        <div class="column">
-            <div class="rod"></div>
-            <div class="upper">
-                <div class="bead" id="upper-bead"></div>
-            </div>
-            <div class="divider"></div>
-            <div class="lower">
-                <div class="bead" id="lower-bead-1"></div>
-                <div class="bead" id="lower-bead-2"></div>
-                <div class="bead" id="lower-bead-3"></div>
-                <div class="bead" id="lower-bead-4"></div>
-            </div>
-        </div>
-    </div>
+    <div id="display">0000</div>
+    <div class="soroban" id="soroban"></div>
 
     <script>
-        let value = 0; // 現在の値
+        const soroban = document.getElementById("soroban");
         const display = document.getElementById("display");
-        const upperBead = document.getElementById("upper-bead");
-        const lowerBeads = [
-            document.getElementById("lower-bead-1"),
-            document.getElementById("lower-bead-2"),
-            document.getElementById("lower-bead-3"),
-            document.getElementById("lower-bead-4")
-        ];
-        
+        let values = [0, 0, 0, 0];
+
         // 各値に対応する色マッピング
         const colorMap = {
             1: "black",
@@ -98,50 +78,79 @@
             8: "maroon",
             9: "saddlebrown"
         };
-        
-        // 上珠のクリックイベント
-        upperBead.addEventListener("click", () => {
-            value = value >= 5 ? value - 5 : value + 5;
-            upperBead.style.transform = value >= 5 ? "translateY(20px)" : "translateY(0px)";
-            updateBeadColors();
+
+        function createColumn(index) {
+            const column = document.createElement("div");
+            column.classList.add("column");
+
+            const rod = document.createElement("div");
+            rod.classList.add("rod");
+            column.appendChild(rod);
+
+            const upper = document.createElement("div");
+            upper.classList.add("upper");
+            const upperBead = document.createElement("div");
+            upperBead.classList.add("bead");
+            upperBead.addEventListener("click", () => toggleUpperBead(index, upperBead));
+            upper.appendChild(upperBead);
+            column.appendChild(upper);
+
+            const divider = document.createElement("div");
+            divider.classList.add("divider");
+            column.appendChild(divider);
+
+            const lower = document.createElement("div");
+            lower.classList.add("lower");
+            const lowerBeads = [];
+            for (let i = 0; i < 4; i++) {
+                const lowerBead = document.createElement("div");
+                lowerBead.classList.add("bead");
+                lowerBead.addEventListener("click", () => toggleLowerBeads(index, i + 1, lowerBeads));
+                lowerBeads.push(lowerBead);
+                lower.appendChild(lowerBead);
+            }
+            column.appendChild(lower);
+
+            soroban.appendChild(column);
+        }
+
+        function toggleUpperBead(index, bead) {
+            values[index] = values[index] >= 5 ? values[index] - 5 : values[index] + 5;
+            bead.style.transform = values[index] >= 5 ? "translateY(20px)" : "translateY(0px)";
+            updateBeadColors(index);
             updateDisplay();
-        });
-        
-        // 下珠のクリックイベント
-        lowerBeads.forEach((bead, i) => {
-            bead.addEventListener("click", () => {
-                let newValue = i + 1;
-                if (value % 5 >= newValue) {
-                    // 押下された数値以上の全ての珠をオフにする
-                    value -= (value % 5) - (newValue - 1);
-                } else {
-                    // それ以外ならその珠以下のすべてをオンにする
-                    value = Math.floor(value / 5) * 5 + newValue;
-                }
-                updateBeadPositions();
-                updateBeadColors();
-                updateDisplay();
-            });
-        });
-        
-        // ビーズの位置を更新
-        function updateBeadPositions() {
+        }
+
+        function toggleLowerBeads(index, newValue, lowerBeads) {
+            if (values[index] % 5 >= newValue) {
+                values[index] -= (values[index] % 5) - (newValue - 1);
+            } else {
+                values[index] = Math.floor(values[index] / 5) * 5 + newValue;
+            }
             lowerBeads.forEach((b, j) => {
-                b.style.transform = j < value % 5 ? "translateY(-20px)" : "translateY(0px)";
+                b.style.transform = j < values[index] % 5 ? "translateY(-20px)" : "translateY(0px)";
             });
+            updateBeadColors(index);
+            updateDisplay();
         }
-        
-        // ビーズの色を更新（アクティブなら指定の色、非アクティブなら灰色）
-        function updateBeadColors() {
-            upperBead.style.backgroundColor = value >= 5 ? colorMap[value] || "darkgray" : "darkgray";
+
+        function updateBeadColors(index) {
+            const columns = document.querySelectorAll(".column");
+            const upperBead = columns[index].querySelector(".upper .bead");
+            const lowerBeads = columns[index].querySelectorAll(".lower .bead");
+            
+            upperBead.style.backgroundColor = values[index] >= 5 ? colorMap[values[index]] || "darkgray" : "darkgray";
             lowerBeads.forEach((bead, i) => {
-                bead.style.backgroundColor = i < value % 5 ? colorMap[value] || "darkgray" : "darkgray";
+                bead.style.backgroundColor = i < values[index] % 5 ? colorMap[values[index]] || "darkgray" : "darkgray";
             });
         }
-        
-        // 画面上の数値を更新
+
         function updateDisplay() {
-            display.textContent = value;
+            display.textContent = values.map(v => v.toString()).join("");
+        }
+
+        for (let i = 0; i < 4; i++) {
+            createColumn(i);
         }
     </script>
 </body>
