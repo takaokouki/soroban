@@ -17,6 +17,7 @@
             display: flex;
             justify-content: center;
             padding: 20px;
+            background-color: #a9a9a9;
         }
         .column {
             display: flex;
@@ -36,7 +37,9 @@
             border-radius: 50%;
             cursor: pointer;
             z-index: 1000;
-            background-color: gray; /* 初期状態はオフ（灰色） */
+            background-color: darkgray; /* 初期状態はオフ（灰色） */
+            border: 2px solid transparent; /* デフォルトの縁取りなし */
+            border: 1px solid black; /* 白色時に縁取りを追加 */
         }
         .rod {
             width: 10px;
@@ -87,13 +90,13 @@
         const colorMap = {
             1: "black",
             2: "red",
-            3: "yellow",
+            3: "gold",
             4: "green",
             5: "orange",
             6: "white",
             7: "navy",
-            8: "darkred",
-            9: "brown"
+            8: "maroon",
+            9: "saddlebrown"
         };
         
         // 上珠のクリックイベント
@@ -130,9 +133,9 @@
         
         // ビーズの色を更新（アクティブなら指定の色、非アクティブなら灰色）
         function updateBeadColors() {
-            upperBead.style.backgroundColor = value >= 5 ? colorMap[value] || "gray" : "gray";
+            upperBead.style.backgroundColor = value >= 5 ? colorMap[value] || "darkgray" : "darkgray";
             lowerBeads.forEach((bead, i) => {
-                bead.style.backgroundColor = i < value % 5 ? colorMap[value] || "gray" : "gray";
+                bead.style.backgroundColor = i < value % 5 ? colorMap[value] || "darkgray" : "darkgray";
             });
         }
         
